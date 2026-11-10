@@ -1,0 +1,7 @@
+# output of the tool itself
+source-bundle*.txt
+*.enc
+*.sbtmp
+.source-bundle.json
+restored/
+extracted/

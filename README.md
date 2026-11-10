@@ -9,6 +9,8 @@
 ## 📦 Scripts
 **[git-merge-push-methods](./git-merge-push-methods/)** — 25 ready-to-run Git merge/push commands with a safe default.
 _(more scripts coming — each will get its own folder and README)_
+**[source-bundle](./source-bundle/)** — Pack a project into one readable `.txt`, unpack it back byte-for-byte — plus grep, SHA-256 verify, AES-256 encrypt, and full `.gitignore` control.
+
 
 ---
 
