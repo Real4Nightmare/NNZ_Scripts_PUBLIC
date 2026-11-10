@@ -80,7 +80,8 @@ BR=#(git symbolic-ref --short HEAD);
 ================================================================
 METHOD 0 — force (dangerous, NOT recommended) — ONE COMMAND
 ================================================================
-git add . && git commit -m "#commit" && git push -u origin --force-with-lease #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local version"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git push -u origin main --force && echo "$REMOTE_URL"
 
 What: Completely erases remote history; replaces with your files.
 When: Remote is completely empty and you are 100% sure.
@@ -95,7 +96,7 @@ Alternative: Use Method 8 (force-with-lease) for a safety net.
 ================================================================
 METHOD 1 — -X ours (with custom message) — ONE COMMAND
 ================================================================
-REMOTE_URL="https://github.com/Real4Nightmare/NNZ_Scripts_PUBLIC.git"; MERGE_MSG="merge: integrate remote, keep local version"; BACKUP_NAME="backup-local";
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local version"; BACKUP_NAME="backup-local";
 git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -X ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Conflicts auto-resolved in favor of your version; Vim never opens.
@@ -111,7 +112,8 @@ Note: Remote-only files (LICENSE, etc.) ARE added to your tree.
 ================================================================
 METHOD 2 — merge (manual) — ONE COMMAND (with pause)
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories && echo "RESOLVE CONFLICTS NOW, THEN RUN THE NEXT COMMAND" && git status
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: resolve conflicts, keep local files"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git merge origin/main --allow-unrelated-histories && echo "RESOLVE CONFLICTS NOW, THEN RUN: git add . && git commit -m \"$MERGE_MSG\" && git push -u origin main"
 
 After resolving files — ONE COMMAND:
 git push -u origin main --force && echo "https://github.com/Real4Nightmare/1NNZ_omni_GH_Projects.git"
@@ -129,7 +131,8 @@ Advantage: Full transparency; nothing is silently discarded.
 ================================================================
 METHOD 3 — inspect + decide — ONE COMMAND (read-only)
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git diff --stat #BR origin/#BR 2>/dev/null || true; git log origin/#BR --oneline -10 2>/dev/null || true; git ls-tree -r origin/#BR --name-only 2>/dev/null || true; echo "INSPECTION #REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="inspect"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git diff --stat main origin/main 2>/dev/null || true; git log origin/main --oneline -10 2>/dev/null || true; git ls-tree -r origin/main --name-only 2>/dev/null || true; echo "INSPECTION $REMOTE_URL"
 
 What: Look first, decide after.
 When: You do not know what the remote contains.
@@ -144,7 +147,8 @@ Commit Msg: No — this does not create a commit.
 ================================================================
 METHOD 4 — pull -X ours — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git pull origin #BR --allow-unrelated-histories --no-ff -X ours -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local version"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git pull origin main --allow-unrelated-histories --no-ff -X ours -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 What: Same as Method 1 but with pull (fetch + merge in one command).
 Advantage: Shorter command.
@@ -159,7 +163,8 @@ Note: pull performs fetch automatically.
 ================================================================
 METHOD 5 — merge -s ours — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: preserve remote history, keep local file tree"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Performs a merge (remote history stays in git log) but the file tree is entirely yours — even LICENSE is not added.
 When: You want to preserve remote history but import zero files from it.
@@ -178,7 +183,8 @@ Difference between -s ours and -X ours:
 ================================================================
 METHOD 6 — --no-commit + review — ONE COMMAND (with pause)
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-commit --no-ff && git status && git diff --cached --stat && echo "REVIEW ABOVE, THEN RUN THE NEXT COMMAND"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: reviewed and approved"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git merge origin/main --allow-unrelated-histories --no-commit --no-ff && git status && git diff --cached --stat && echo "REVIEW ABOVE, THEN RUN: git commit -m \"$MERGE_MSG\" && git push -u origin main"
 
 If everything looks good — ONE COMMAND:
 git commit -m "#MERGE_MSG" && git push -u origin #(git symbolic-ref --short HEAD) && echo "#REPO_URL"
@@ -198,7 +204,8 @@ Commit Msg: Yes — you write it after review.
 ================================================================
 METHOD 7 — rerere — ONE COMMAND
 ================================================================
-git config rerere.enabled true && git config rerere.autoupdate true &&  git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories && git status && echo "REVIEW CONFLICTS: #REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: rerere enabled"; BACKUP_NAME="backup-local";
+git config rerere.enabled true; git config rerere.autoupdate true; git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git merge origin/main --allow-unrelated-histories && git status && echo "REVIEW CONFLICTS: $REMOTE_URL"
 
 What: Git remembers how you resolved previous conflicts and reapplies automatically.
 When: You merge frequently and see recurring conflicts.
@@ -213,7 +220,8 @@ Commit Msg: Yes — auto-generated by Git.
 ================================================================
 METHOD 8 — force-with-lease (safer than force) — ONE COMMAND
 ================================================================
-git push origin #(git symbolic-ref --short HEAD) --force-with-lease && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="force-with-lease"; BACKUP_NAME="backup-local";
+git push origin main --force-with-lease && echo "$REMOTE_URL"
 
 What: Like force but safer — if someone changed the remote between your fetch and push, the push is rejected.
 When: You must force but want a safety net.
@@ -227,7 +235,8 @@ Commit Msg: No — this does not create a commit.
 ================================================================
 METHOD 9 — git replace (NOT recommended) — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git replace --graft HEAD origin/#BR 2>/dev/null || true; git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="replace graft"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git replace --graft HEAD origin/main 2>/dev/null || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Tells Git to pretend the remote commit is the parent of your commit — a fake history graft.
 Risk: HIGH — complex, may corrupt history, not used in real teams.
@@ -241,7 +250,8 @@ Warning: Only for experimentation; never in production.
 ================================================================
 METHOD 10 — inspect + -s ours (BEST HYBRID) — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git diff --stat #BR origin/#BR 2>/dev/null || true; git merge --abort 2>/dev/null || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: inspect remote, keep local tree"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git diff --stat main origin/main 2>/dev/null || true; git merge --abort 2>/dev/null || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Inspect first (shows diff), then automatically merges with -s ours and pushes.
 When: You want the safest automatic method.
@@ -256,7 +266,8 @@ Commit Msg: Yes — custom via -m.
 ================================================================
 METHOD 11 — --no-verify push — ONE COMMAND
 ================================================================
-git push -u origin #(git symbolic-ref --short HEAD) --no-verify && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="no-verify push"; BACKUP_NAME="backup-local";
+git push -u origin main --no-verify && echo "$REMOTE_URL"
 
 What: Skips client-side pre-push hooks (e.g., linters, tests).
 When: A hook is blocking you and you are sure it is safe to skip.
@@ -270,7 +281,8 @@ Commit Msg: No — this does not create a commit.
 ================================================================
 METHOD 12 — cherry-pick — ONE COMMAND (with pause)
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git cherry-pick origin/#BR~1..origin/#BR --no-commit && git status && echo "REVIEW ABOVE, THEN RUN THE NEXT COMMAND"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="cherry-pick: apply selected remote commits"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git cherry-pick origin/main~1..origin/main --no-commit && git status && echo "REVIEW ABOVE, THEN RUN: git add . && git commit -m \"$MERGE_MSG\" && git push -u origin main"
 
 After reviewing — ONE COMMAND:
 git add . && git commit -m "#MERGE_MSG" && git push -u origin #(git symbolic-ref --short HEAD) && echo "#REPO_URL"
@@ -287,7 +299,8 @@ Commit Msg: Yes — copied from remote, or custom via -m.
 ================================================================
 METHOD 13 — subtree merge — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git merge -s subtree origin/#BR --allow-unrelated-histories --no-ff -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: embed remote as subtree"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git merge -s subtree origin/main --allow-unrelated-histories --no-ff -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 What: Merges the remote as a subtree under a specific directory.
 When: You want to embed the remote repository inside your project.
@@ -302,7 +315,8 @@ Note: Usually overkill for this scenario.
 ================================================================
 METHOD 14 — strategy=recursive with ours — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s recursive -X ours -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: recursive strategy with ours preference"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s recursive -X ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Explicitly uses the recursive strategy with "ours" preference.
 When: You want fine-grained control over merge behavior.
@@ -316,7 +330,8 @@ Commit Msg: Yes — custom via -m.
 ================================================================
 METHOD 15 — orphan branch rebuild — ONE COMMAND
 ================================================================
-git checkout --orphan fresh-branch && git add -A && git commit -m "#MERGE_MSG" && git branch -M #BR && git push -u origin #BR --force-with-lease && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="rebuild: clean history"; BACKUP_NAME="backup-local";
+git checkout --orphan fresh-main && git add -A && git commit -m "$MERGE_MSG" && git branch -M main && git push -u origin main --force-with-lease && echo "$REMOTE_URL"
 
 What: Creates a brand-new branch with no history, then force-replaces your branch.
 When: You want a completely clean history with no remote legacy.
@@ -331,7 +346,8 @@ Warning: Only use when remote history is truly worthless.
 ================================================================
 METHOD 16 — GPG signed merge — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -S -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local tree (signed)"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -S -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Same as Method 5 but the merge commit is GPG-signed.
 When: Team requires signed commits (enterprise, open-source).
@@ -346,7 +362,8 @@ Requirement: GPG key configured (git config --global user.signingkey <KEY>).
 ================================================================
 METHOD 17 — co-authored merge — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" -m "Co-authored-by: Name <email@example.com>" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local tree"; COAUTH="Co-authored-by: Real4Nightmare <your-email@example.com>"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" -m "$COAUTH" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Merge with a co-author attribution (two -m flags).
 When: You merged work from another contributor.
@@ -360,7 +377,8 @@ Commit Msg: Yes — custom + Co-authored-by trailer.
 ================================================================
 METHOD 18 — body + title merge — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" -m "Preserves local file tree using -s ours strategy. Remote history is kept in git log. No unwanted remote files (LICENSE) are imported." && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main into local platform"; BODY="Preserves local file tree using -s ours strategy. Remote history is kept in git log."; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" -m "$BODY" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Merge with a long descriptive body (title + body).
 When: The merge is complex and needs explanation.
@@ -374,7 +392,8 @@ Commit Msg: Yes — custom title + detailed body.
 ================================================================
 METHOD 19 — conventional commits — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main (Conventional Commits)"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Merge with a Conventional Commits style message (e.g., "merge: ...").
 When: Project follows the Conventional Commits standard.
@@ -388,7 +407,8 @@ Commit Msg: Yes — conventional prefix (merge:).
 ================================================================
 METHOD 20 — signed + conventional — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -S -m "#MERGE_MSG" -m "Signed merge with conventional commit format. Preserves local tree." && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main (signed, conventional)"; BODY="Signed merge with conventional commit format. Preserves local tree."; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -S -m "$MERGE_MSG" -m "$BODY" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Signed merge + conventional message + body.
 When: Enterprise-grade project with strict standards.
@@ -402,7 +422,8 @@ Commit Msg: Yes — signed + conventional + body.
 ================================================================
 METHOD 21 — full professional — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -S -m "#MERGE_MSG" -m "Strategy: -s ours (preserves local tree). Remote history: kept in git log. Unwanted files: excluded (LICENSE, etc.)." -m "Co-authored-by: Name <email@example.com>" -m "Refs: #1" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main into local platform"; BODY="Strategy: -s ours (preserves local tree). Remote history: kept in git log. Unwanted files: excluded."; COAUTH="Co-authored-by: Real4Nightmare <your-email@example.com>"; REFS="Refs: #1"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -S -m "$MERGE_MSG" -m "$BODY" -m "$COAUTH" -m "$REFS" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Full professional commit — signed, conventional title, detailed body, co-author, issue reference.
 When: Maximum professional quality required.
@@ -416,7 +437,8 @@ Commit Msg: Yes — signed + title + body + co-author + refs.
 ================================================================
 METHOD 22 — amend + re-sign — ONE COMMAND
 ================================================================
-git commit --amend -S -m "#MERGE_MSG" && git push -u origin #(git symbolic-ref --short HEAD) && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main (amended + signed)"; BACKUP_NAME="backup-local";
+git commit --amend -S -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 What: Amends the last commit (message + signature) before pushing.
 When: You already committed but want to fix the message and sign it.
@@ -445,7 +467,8 @@ Commit Msg: Yes — custom via -m.
 ================================================================
 METHOD 24 — rebase + sign — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git rebase origin/#BR --no-autostash 2>/dev/null || true; git commit --amend -S -m "#MERGE_MSG" 2>/dev/null || true; git push -u origin #BR --force-with-lease && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: squash remote history into single commit"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --squash && git commit -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 What: Rebases your commits onto remote, signs the result, then pushes.
 When: You want a linear history + signed commits.
@@ -460,7 +483,8 @@ Warning: Do not rebase commits already pushed to shared branches.
 ================================================================
 METHOD 25 — reset + recommit — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git reset --soft origin/#BR && git add -A && git commit -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="rebuild: reset onto remote, recommit all changes"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git reset --soft origin/main && git add -A && git commit -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 What: Soft-resets onto remote, then recommits all your changes as one commit.
 When: You want a clean single commit on top of remote.
@@ -476,91 +500,116 @@ Warning: Only when you are sure your local history can be flattened.
 ONE-LINE SUMMARY OF ALL METHODS
 ================================================================
 # 0 force
-git push -u origin #BR --force
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local version"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git push -u origin main --force && echo "$REMOTE_URL"
 
 # 1 -X ours
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -X ours -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local version"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -X ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 2 manual merge
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories && git status
-# then: git add . && git commit -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: resolve conflicts, keep local files"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git merge origin/main --allow-unrelated-histories && echo "RESOLVE CONFLICTS NOW, THEN RUN: git add . && git commit -m \"$MERGE_MSG\" && git push -u origin main"
 
 # 3 inspect
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git diff --stat #BR origin/#BR 2>/dev/null || true; git log origin/#BR --oneline -10 2>/dev/null || true
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: resolve conflicts, keep local files"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git merge origin/main --allow-unrelated-histories && echo "RESOLVE CONFLICTS NOW, THEN RUN: git add . && git commit -m \"$MERGE_MSG\" && git push -u origin main"
 
 # 4 pull -X ours
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git pull origin #BR --allow-unrelated-histories --no-ff -X ours -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local version"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git pull origin main --allow-unrelated-histories --no-ff -X ours -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 # 5 -s ours
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: preserve remote history, keep local file tree"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 6 review before commit
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-commit --no-ff && git diff --cached --stat
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: reviewed and approved"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git merge origin/main --allow-unrelated-histories --no-commit --no-ff && git status && git diff --cached --stat && echo "REVIEW ABOVE, THEN RUN: git commit -m \"$MERGE_MSG\" && git push -u origin main"
 # then: git commit -m "#MERGE_MSG" && git push -u origin #BR
 
 # 7 rerere
-git config rerere.enabled true && git config rerere.autoupdate true
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: rerere enabled"; BACKUP_NAME="backup-local";
+git config rerere.enabled true; git config rerere.autoupdate true; git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git merge origin/main --allow-unrelated-histories && git status && echo "REVIEW CONFLICTS: $REMOTE_URL"
 
 # 8 force-with-lease
-git push origin #(git symbolic-ref --short HEAD) --force-with-lease
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="force-with-lease"; BACKUP_NAME="backup-local";
+git push origin main --force-with-lease && echo "$REMOTE_URL"
 
 # 9 replace (experimental)
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git replace --graft HEAD origin/#BR 2>/dev/null || true; git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="replace graft"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git replace --graft HEAD origin/main 2>/dev/null || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 10 best hybrid
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git diff --stat #BR origin/#BR 2>/dev/null || true; git merge --abort 2>/dev/null || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: inspect remote, keep local tree"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git diff --stat main origin/main 2>/dev/null || true; git merge --abort 2>/dev/null || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 11 no-verify push
-git push -u origin #(git symbolic-ref --short HEAD) --no-verify
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="no-verify push"; BACKUP_NAME="backup-local";
+git push -u origin main --no-verify && echo "$REMOTE_URL"
 
 # 12 cherry-pick
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git cherry-pick origin/#BR~1..origin/#BR --no-commit && git status
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="cherry-pick: apply selected remote commits"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git cherry-pick origin/main~1..origin/main --no-commit && git status && echo "REVIEW ABOVE, THEN RUN: git add . && git commit -m \"$MERGE_MSG\" && git push -u origin main"
 # then: git add . && git commit -m "#MERGE_MSG" && git push -u origin #BR
 
 # 13 subtree merge
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git merge -s subtree origin/#BR --allow-unrelated-histories --no-ff -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: embed remote as subtree"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git merge -s subtree origin/main --allow-unrelated-histories --no-ff -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 # 14 recursive with ours
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s recursive -X ours -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: recursive strategy with ours preference"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s recursive -X ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 15 orphan rebuild
-git checkout --orphan fresh-branch && git add -A && git commit -m "#MERGE_MSG" && git branch -M #BR && git push -u origin #BR --force-with-lease
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="rebuild: clean history"; BACKUP_NAME="backup-local";
+git checkout --orphan fresh-main && git add -A && git commit -m "$MERGE_MSG" && git branch -M main && git push -u origin main --force-with-lease && echo "$REMOTE_URL"
 
 # 16 GPG signed merge
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -S -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local tree (signed)"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -S -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 17 co-authored merge
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" -m "Co-authored-by: Name <email@example.com>" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote, keep local tree"; COAUTH="Co-authored-by: Real4Nightmare <your-email@example.com>"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" -m "$COAUTH" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 18 body + title merge
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" -m "Preserves local file tree using -s ours strategy. Remote history is kept in git log." && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main into local platform"; BODY="Preserves local file tree using -s ours strategy. Remote history is kept in git log."; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" -m "$BODY" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 19 conventional commits
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main (Conventional Commits)"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 20 signed + conventional
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -S -m "#MERGE_MSG" -m "Signed merge with conventional commit format." && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main (signed, conventional)"; BODY="Signed merge with conventional commit format. Preserves local tree."; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -S -m "$MERGE_MSG" -m "$BODY" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 21 full professional
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -S -m "#MERGE_MSG" -m "Strategy: -s ours (preserves local tree). Remote history: kept in git log." -m "Co-authored-by: Name <email@example.com>" -m "Refs: #1" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main into local platform"; BODY="Strategy: -s ours (preserves local tree). Remote history: kept in git log. Unwanted files: excluded."; COAUTH="Co-authored-by: Real4Nightmare <your-email@example.com>"; REFS="Refs: #1"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -S -m "$MERGE_MSG" -m "$BODY" -m "$COAUTH" -m "$REFS" || true; git push -u origin main && echo "$REMOTE_URL"
 
 # 22 amend + re-sign
-git commit --amend -S -m "#MERGE_MSG" && git push -u origin #(git symbolic-ref --short HEAD)
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: integrate remote main (amended + signed)"; BACKUP_NAME="backup-local";
+git commit --amend -S -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 # 23 squash merge
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --squash && git commit -m "#MERGE_MSG" && git push -u origin #BR
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: squash remote history into single commit"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --squash && git commit -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 # 24 rebase + sign
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git rebase origin/#BR --no-autostash 2>/dev/null || true; git commit --amend -S -m "#MERGE_MSG" 2>/dev/null || true; git push -u origin #BR --force-with-lease
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: rebase remote, keep local tree (signed)"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git rebase origin/main --no-autostash 2>/dev/null || true; git commit --amend -S -m "$MERGE_MSG" 2>/dev/null || true; git push -u origin main --force-with-lease && echo "$REMOTE_URL"
 
 # 25 reset + recommit
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: not found"; git status --short; git reset --soft origin/#BR && git add -A && git commit -m "#MERGE_MSG" && git push -u origin #BR
-
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="rebuild: reset onto remote, recommit all changes"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git reset --soft origin/main && git add -A && git commit -m "$MERGE_MSG" && git push -u origin main && echo "$REMOTE_URL"
 
 ================================================================
 FINAL RECOMMENDATION — ONE COMMAND (BEST) — METHOD 10
 ================================================================
- git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git fetch origin || true; git diff --stat #BR origin/#BR 2>/dev/null || true; git merge --abort 2>/dev/null || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -s ours -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="REMOTE_URL"; MERGE_MSG="merge: inspect remote, keep local tree"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git fetch origin || true; git diff --stat main origin/main 2>/dev/null || true; git merge --abort 2>/dev/null || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -s ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 Why Method 10 is best:
 - Remote history is preserved (not a force push)
