@@ -95,7 +95,8 @@ Alternative: Use Method 8 (force-with-lease) for a safety net.
 ================================================================
 METHOD 1 — -X ours (with custom message) — ONE COMMAND
 ================================================================
-git remote get-url origin >/dev/null 2>&1 || git remote add origin "#REPO_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/#BR >/dev/null 2>&1 && git branch -f "#BACKUP_NAME" origin/#BR || echo "WARN: origin/#BR not found"; git status --short; git merge origin/#BR --allow-unrelated-histories --no-ff -X ours -m "#MERGE_MSG" && git push -u origin #BR && echo "#REPO_URL"
+REMOTE_URL="https://github.com/Real4Nightmare/NNZ_Scripts_PUBLIC.git"; MERGE_MSG="merge: integrate remote, keep local version"; BACKUP_NAME="backup-local";
+git remote get-url origin >/dev/null 2>&1 || git remote add origin "$REMOTE_URL"; git merge --abort 2>/dev/null || true; git fetch origin || true; git rev-parse --verify origin/main >/dev/null 2>&1 && git branch -f "$BACKUP_NAME" origin/main || echo "WARN: origin/main not found"; git status --short; git add -A; git commit -m "$MERGE_MSG" || echo "nothing to commit"; git merge origin/main --allow-unrelated-histories --no-ff -X ours -m "$MERGE_MSG" || true; git push -u origin main && echo "$REMOTE_URL"
 
 What: Conflicts auto-resolved in favor of your version; Vim never opens.
 When: Remote is almost empty and you are in a hurry.
